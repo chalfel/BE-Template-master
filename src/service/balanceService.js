@@ -1,9 +1,11 @@
 const { Op } = require("sequelize");
-const { AMOUNT_GREATHER_THAN_ALLOWED, ENTITY_NOT_FOUND } = require("../constant/error");
+const {
+  AMOUNT_GREATHER_THAN_ALLOWED,
+  ENTITY_NOT_FOUND,
+} = require("../constant/error");
 
 const balanceService = (app) => ({
-    async deposit(profile, amount, id) {
-
+  async deposit(profile, amount, id) {
     const { Job, Profile, Contract } = app.get("models");
 
     const sequelize = app.get("sequelize");
@@ -33,14 +35,16 @@ const balanceService = (app) => ({
         ],
       });
 
-      if (!unpaidJobs || unpaidJobs.length === 0) throw new Error(ENTITY_NOT_FOUND);
+      if (!unpaidJobs || unpaidJobs.length === 0)
+        throw new Error(ENTITY_NOT_FOUND);
 
       const maxiumMoneyToPay = unpaidJobs.reduce(
         (prev, curr) => prev + curr.price,
         0
       );
 
-      if (amount > maxiumMoneyToPay * 0.25) throw new Error(AMOUNT_GREATHER_THAN_ALLOWED);
+      if (amount > maxiumMoneyToPay * 0.25)
+        throw new Error(AMOUNT_GREATHER_THAN_ALLOWED);
 
       const client = await Profile.findOne({
         lock: true,
@@ -52,19 +56,17 @@ const balanceService = (app) => ({
 
       await Profile.update(
         { balance: client.balance + amount },
-        { where: { id: client.id }, lock: true, transaction }
+        { where: { id: profile.id }, lock: true, transaction }
       );
 
-      transaction.commit();
+      await transaction.commit();
 
-      return
+      return;
     } catch (err) {
-      transaction.rollback();
+      await transaction.rollback();
       throw err;
     }
-  }
-    }
-)
-
+  },
+});
 
 module.exports = balanceService;

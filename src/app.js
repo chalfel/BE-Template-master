@@ -2,14 +2,12 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const { sequelize } = require("./model");
 const { getProfile } = require("./middleware/getProfile");
-const { Op } = require("sequelize");
 const { isContractor } = require("./middleware/isContractor");
 const service = require("./service");
 const {
   ENTITY_NOT_FOUND,
   AMOUNT_GREATHER_THAN_ALLOWED,
 } = require("./constant/error");
-const jobService = require("./service/jobService");
 
 const app = express();
 
@@ -28,7 +26,7 @@ app.get("/contracts/:id", getProfile, async (req, res) => {
   try {
     const contract = await contractService.getContractById(id, profile);
 
-    res.json(contract);
+    return res.json(contract);
   } catch (err) {
     if (err === ENTITY_NOT_FOUND) {
       return res.status(404).json({ message: err.message });
@@ -45,7 +43,7 @@ app.get("/contracts", getProfile, async (req, res) => {
 
   const { contractService } = app.get("services");
   try {
-    const contracts = await contractService.getContractById(profile);
+    const contracts = await contractService.getContracts(profile);
 
     return res.json(contracts);
   } catch (err) {
@@ -65,7 +63,6 @@ app.get("/jobs/unpaid", getProfile, async (req, res) => {
     const unpaidJobs = await jobService.getUnpaidJobs(req.profile)
     return res.status(200).json(unpaidJobs)
   } catch (err) {
-    console.log(err.message)
     if (err.message === ENTITY_NOT_FOUND) {
       return res.status(404).json({ message: err.message });
     }

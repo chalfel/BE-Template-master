@@ -19,7 +19,7 @@ const contractService = (app) => ({
     return contract;
   },
 
-  async gertContracts(profile) {
+  async getContracts(profile) {
     const { Contract } = app.get("models");
 
     const { id, type } = profile;
